@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Call SOP</string>
+
+    <array name="category">
+        <item>--Select Message Type--</item>
+        <item>Text Message</item>
+        <item>WhatsApp Message</item>
+    </array>
+</resources>

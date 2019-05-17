@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#084a81</color>
+    <color name="colorPrimaryDark">#084a81</color>
+    <color name="colorAccent">#3BA0B9</color>
+
+    <color name="cardBackground">#189903</color>
+    <color name="textColorSelected">#FFFFFF</color>
+    <color name="pending">#FF3B3B</color>
+    <color name="sent">#2ECA34</color>
+
+    <color name="grey">#979797</color>
+    <color name="ripple_color">#ABFF0000</color>
+    <color name="remarks">#E73333</color>
+
+</resources>
