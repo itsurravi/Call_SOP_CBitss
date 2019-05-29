@@ -1,15 +1,26 @@
 package com.codrox.messagetemplate.Receiver;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.codrox.messagetemplate.Activity.AlertActivity;
 import com.codrox.messagetemplate.Constants;
 import com.codrox.messagetemplate.DataBase;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class PhoneStateReceiver extends BroadcastReceiver {
 
@@ -18,6 +29,11 @@ public class PhoneStateReceiver extends BroadcastReceiver {
     private static boolean picked = false;
     private static String savedNumber;
     DataBase db;
+
+    private static String filename;
+    private static File audio;
+    private static Uri newUri;
+    private static MediaRecorder r;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -59,7 +75,6 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 if(lastState != TelephonyManager.CALL_STATE_RINGING){
                     isIncoming = false;
                     savedNumber=number;
-//                    Toast.makeText(context, "OutGoing Call...", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     picked=true;
@@ -74,7 +89,10 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 
                 number = ab.toString();
 
-                db.insertCall(number,"","", String.valueOf(System.currentTimeMillis()), Constants.Status_Pending,"","","");
+                recordingStart();
+
+                db.insertCall(number,"","", String.valueOf(System.currentTimeMillis()), Constants.Status_Pending,"", audio.getAbsolutePath(), Constants.offline);
+
                 Log.d("Data_offhook", number);
                 break;
             case TelephonyManager.CALL_STATE_IDLE:
@@ -98,8 +116,44 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                     intent.putExtra(Constants.ID, String.valueOf(id));
                     context.startActivity(intent);
                 }
+
+                recordingStop();
+
                 break;
         }
         lastState = state;
     }
+
+    private void recordingStart() {
+        File dir = new File(Environment.getExternalStorageDirectory() + "/CallSopRecordings/");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        try {
+            long time = System.currentTimeMillis();
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM-dd-yyyy-HH:mm:ss");
+            Date resultdate = new Date(time);
+            filename = savedNumber + "-" + sdf.format(resultdate);
+            audio = new File(dir, filename + ".3gpp");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        r = new MediaRecorder();
+        r.setAudioSource(MediaRecorder.AudioSource.MIC);
+        r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        r.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        r.setOutputFile(audio.getAbsolutePath());
+        try {
+            r.prepare();
+            r.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void recordingStop() {
+        r.stop();
+        r.release();
+    }
+
 }

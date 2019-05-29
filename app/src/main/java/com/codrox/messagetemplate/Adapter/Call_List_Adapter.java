@@ -22,16 +22,20 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import me.gujun.android.taggroup.TagGroup;
+
 public class Call_List_Adapter extends RecyclerView.Adapter<Call_List_Adapter.ListViewHolder> {
 
     Context c;
     List<Modal_Call> data;
+    List<String> tags;
 
     OnRvItemClickListener click;
 
-    public Call_List_Adapter(Context c, List<Modal_Call> data) {
+    public Call_List_Adapter(Context c, List<Modal_Call> data, List<String> tags) {
         this.c = c;
         this.data = data;
+        this.tags = tags;
     }
 
     private String setDate(String call_date) {
@@ -62,26 +66,16 @@ public class Call_List_Adapter extends RecyclerView.Adapter<Call_List_Adapter.Li
             listViewHolder.num.setText(data.get(position).getCALL_NUMBER());
         }
 
-
-        /*listViewHolder.status.setText(data.get(position).getCALL_STATUS());
-        listViewHolder.msg.setText(data.get(position).getCALL_MSG());
-        listViewHolder.wap.setText(data.get(position).getCALL_WAP());
-
-        if (data.get(position).getCALL_MSG().equals("")) {
-            listViewHolder.msg.setText("Not Sent");
-            listViewHolder.msg.setTextColor(Color.RED);
+        if(tags.get(position).equals(""))
+        {
+            listViewHolder.mTagGroup.setVisibility(View.GONE);
         }
-        if (data.get(position).getCALL_WAP().equals("")) {
-            listViewHolder.wap.setText("Not Sent");
-            listViewHolder.wap.setTextColor(Color.RED);
+        else {
+
+            String ar[] = tags.get(position).split(", ");
+
+            listViewHolder.mTagGroup.setTags(ar);
         }
-
-        if (data.get(position).getCALL_STATUS().equals(Constants.Status_Pending)) {
-            listViewHolder.s_icon.setImageResource(R.drawable.ic_block);
-        } else if (data.get(position).getCALL_STATUS().equals(Constants.Status_Sent)) {
-            listViewHolder.s_icon.setImageResource(R.drawable.ic_check);
-        }*/
-
         listViewHolder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,21 +99,25 @@ public class Call_List_Adapter extends RecyclerView.Adapter<Call_List_Adapter.Li
     class ListViewHolder extends RecyclerView.ViewHolder {
         TextView num;
         TextView date;
+        TextView tags;
         /*ImageView s_icon;
         TextView status;
         TextView msg;
         TextView wap;*/
         LinearLayout layout;
+        TagGroup mTagGroup;
 
         public ListViewHolder(@NonNull View convertView) {
             super(convertView);
             num = convertView.findViewById(R.id.number);
             date = convertView.findViewById(R.id.date);
+//            tags = convertView.findViewById(R.id.tags);
             /*s_icon = convertView.findViewById(R.id.s_color);
             status = convertView.findViewById(R.id.status);
             msg = convertView.findViewById(R.id.txt_msg);
             wap = convertView.findViewById(R.id.wa_msg);*/
             layout = convertView.findViewById(R.id.layout);
+            mTagGroup = (TagGroup) convertView.findViewById(R.id.tag_group);
         }
     }
 

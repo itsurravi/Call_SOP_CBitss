@@ -27,8 +27,9 @@ import java.util.List;
 public class CallDataActivity extends AppCompatActivity implements Call_List_Adapter.OnRvItemClickListener {
 
     RecyclerView lv;
-
+    ProgressDialog pd;
     List<Modal_Call> data;
+    List<String> tags;
 
     DataBase db;
 
@@ -37,8 +38,12 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call_data);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         lv = (RecyclerView) findViewById(R.id.list);
         data = new ArrayList<>();
+        tags = new ArrayList<>();
 
         LinearLayoutManager lm = new LinearLayoutManager(this);
         lm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -47,6 +52,12 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
         lv.setItemAnimator(new DefaultItemAnimator());
 
         db = new DataBase(this);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     @Override
@@ -93,7 +104,6 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
     }
 
     class fetchCall extends AsyncTask<Void, Void, List<Modal_Call>> {
-        ProgressDialog pd;
 
         @Override
         protected void onPreExecute() {
@@ -108,6 +118,7 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
         @Override
         protected List<Modal_Call> doInBackground(Void... voids) {
             data.clear();
+            tags.clear();
 
             Cursor c = db.readDistinctCalls();
             if (c != null && c.getCount() > 0) {
@@ -139,13 +150,38 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
                 while (c.moveToNext());
             }
             Collections.reverse(data);
+
+            for(int i = 0;i<data.size();i++) {
+                String num = data.get(i).getCALL_NUMBER();
+                Cursor cr = db.readTag(num);
+                if(cr !=null && cr.getCount()>0)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    cr.moveToFirst();
+                    do {
+                        String tag = cr.getString(cr.getColumnIndex(DataBase.TAG_NAME));
+                        sb.append(tag+", ");
+                    }
+                    while (cr.moveToNext());
+
+                    cr.close();
+
+                    String tag = sb.toString();
+                    tags.add(tag);
+                }
+                else
+                {
+                    tags.add("");
+                }
+            }
+
             return data;
         }
 
         @Override
         protected void onPostExecute(List<Modal_Call> modal_calls) {
             super.onPostExecute(modal_calls);
-            Call_List_Adapter ad = new Call_List_Adapter(CallDataActivity.this, modal_calls);
+            Call_List_Adapter ad = new Call_List_Adapter(CallDataActivity.this, data, tags);
             ad.setOnItemClick(CallDataActivity.this);
             ad.setOnItemLongClick(CallDataActivity.this);
             pd.dismiss();

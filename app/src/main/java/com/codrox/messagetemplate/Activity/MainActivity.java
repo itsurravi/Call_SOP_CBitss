@@ -20,8 +20,11 @@ import com.codrox.messagetemplate.DataBase;
 import com.codrox.messagetemplate.Prefrence;
 import com.codrox.messagetemplate.R;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_PHONE_STATE;
+import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.SEND_SMS;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -113,13 +116,20 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(), SEND_SMS);
         int result1 = ContextCompat.checkSelfPermission(getApplicationContext(), READ_PHONE_STATE);
+        int result2 = ContextCompat.checkSelfPermission(getApplicationContext(), READ_EXTERNAL_STORAGE);
+        int result3 = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_EXTERNAL_STORAGE);
+        int result4 = ContextCompat.checkSelfPermission(getApplicationContext(), RECORD_AUDIO);
 
-        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
+        return result == PackageManager.PERMISSION_GRANTED
+                && result2 == PackageManager.PERMISSION_GRANTED
+                && result3 == PackageManager.PERMISSION_GRANTED
+                && result4 == PackageManager.PERMISSION_GRANTED
+                && result1 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
 
-        ActivityCompat.requestPermissions(this, new String[]{SEND_SMS, READ_PHONE_STATE}, PERMISSION_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{SEND_SMS, READ_PHONE_STATE, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, PERMISSION_CODE);
 
     }
 
@@ -130,10 +140,13 @@ public class MainActivity extends AppCompatActivity {
             case PERMISSION_CODE:
                 if (grantResults.length > 0) {
 
-                    boolean locationAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean cameraAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean sms = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean phone = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean storage = grantResults[2] == PackageManager.PERMISSION_GRANTED;
+                    boolean storage2 = grantResults[3] == PackageManager.PERMISSION_GRANTED;
+                    boolean recording = grantResults[4] == PackageManager.PERMISSION_GRANTED;
 
-                    if (locationAccepted && cameraAccepted) {
+                    if (sms && phone && storage && storage2 && recording) {
                         Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();

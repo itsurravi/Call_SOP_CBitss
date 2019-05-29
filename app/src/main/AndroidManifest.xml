@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.codrox.messagetemplate">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
+    <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -17,9 +23,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.LoginActivity"></activity>
-        <activity android:name=".Activity.MessageInfoActivity" />
-        <activity android:name=".Activity.MessageSend" />
+        <activity
+            android:name=".Activity.AudioRecordingActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".Activity.LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MessageInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MessageSend"
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name=".Receiver.PhoneStateReceiver"
@@ -36,11 +51,20 @@
 
         <activity
             android:name=".Activity.AlertActivity"
-            android:excludeFromRecents="true" />
-        <activity android:name=".Activity.AddTemplateActivity" />
-        <activity android:name=".Activity.TemplatesActivity" />
-        <activity android:name=".Activity.CallDataActivity" />
-        <activity android:name=".Activity.MainActivity">
+            android:excludeFromRecents="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.AddTemplateActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.TemplatesActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.CallDataActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -11,4 +11,8 @@ public class Constants {
     public final static String Number = "number";
     public final static String TYPE = "Type";
 
+    //audio files status
+    public final static String online = "Online";
+    public final static String offline = "Offline";
+
 }

@@ -5,19 +5,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-import android.widget.Toast;
 
 public class DataBase extends SQLiteOpenHelper {
 
     public final static String DB_NAME = "Call_DB";
 
+    //Templates_Table
     public final static String TEMP_TABLE = "Templates";
     public final static String TEMP_ID = "id";
     public final static String TEMP_MSG = "message";
     public final static String TEMP_TITLE = "title";
     public final static String TEMP_CAT = "category";
 
+    //CallData_Table
     public final static String CALL_TABLE = "Call_Data";
     public final static String CALL_ID = "id";
     public final static String CALL_NUMBER = "number";
@@ -29,11 +29,18 @@ public class DataBase extends SQLiteOpenHelper {
     public final static String CALL_AUDIO = "audio";
     public final static String CALL_AUDIO_STATUS = "audio_status";
 
+    //Remarks_Table
     public final static String REMARKS_TABLE = "remarks_table";
     public final static String REMARKS_ID = "id";
     public final static String REMARKS = "remarks";
     public final static String NUMBER = "number";
     public final static String REMARKS_DATE = "remarks_date";
+
+    //Tags_Table
+    public final static String TAG_TABLE = "tags_table";
+    public final static String TAG_ID = "id";
+    public final static String TAG_NUMBER = "number";
+    public final static String TAG_NAME = "tag";
 
     private final static int DB_VERSION = 1;
 
@@ -46,6 +53,11 @@ public class DataBase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        String tag_table = "CREATE TABLE " + TAG_TABLE + "("
+                + TAG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + TAG_NUMBER + " VARCHAR, "
+                + TAG_NAME + " VARCHAR);";
+
         String sql1 = "CREATE TABLE " + TEMP_TABLE + "("
                 + TEMP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + TEMP_CAT + " VARCHAR, "
@@ -72,11 +84,30 @@ public class DataBase extends SQLiteOpenHelper {
         db.execSQL(sql1);
         db.execSQL(sql2);
         db.execSQL(remark_table);
+        db.execSQL(tag_table);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    //Tag Functions
+    public void insertTag(String num, String tag) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(TAG_NUMBER, num);
+        cv.put(TAG_NAME, tag);
+
+        db.insert(TAG_TABLE, null, cv);
+    }
+
+    public Cursor readTag(String num) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM "+TAG_TABLE+" WHERE "+TAG_NUMBER+"='"+num+"';";
+        Cursor c = db.rawQuery(sql, null);
+        return c;
     }
 
 
@@ -196,8 +227,7 @@ public class DataBase extends SQLiteOpenHelper {
         db.insert(REMARKS_TABLE, null, cv);
     }
 
-    public Cursor readRemarks(String number)
-    {
+    public Cursor readRemarks(String number) {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE "+NUMBER+"='"+number+"';";
         Cursor c = db.rawQuery(sql, null);

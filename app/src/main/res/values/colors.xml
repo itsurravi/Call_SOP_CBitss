@@ -12,5 +12,7 @@
     <color name="grey">#979797</color>
     <color name="ripple_color">#ABFF0000</color>
     <color name="remarks">#E73333</color>
+    <color name="tag_color">#1DB4AD</color>
+    <color name="textcolor">#FF424242</color>
 
 </resources>

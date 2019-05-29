@@ -16,6 +16,7 @@
     <EditText
         android:id="@+id/edit_name"
         android:hint="Enter Name here"
+        android:inputType="textCapWords"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
