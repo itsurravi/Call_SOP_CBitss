@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DataBase extends SQLiteOpenHelper {
 
@@ -35,12 +36,14 @@ public class DataBase extends SQLiteOpenHelper {
     public final static String REMARKS = "remarks";
     public final static String NUMBER = "number";
     public final static String REMARKS_DATE = "remarks_date";
+    public final static String REMARKS_STATUS = "status";
 
     //Tags_Table
     public final static String TAG_TABLE = "tags_table";
     public final static String TAG_ID = "id";
     public final static String TAG_NUMBER = "number";
     public final static String TAG_NAME = "tag";
+    public final static String TAG_STATUS = "status";
 
     private final static int DB_VERSION = 1;
 
@@ -230,6 +233,39 @@ public class DataBase extends SQLiteOpenHelper {
     public Cursor readRemarks(String number) {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE "+NUMBER+"='"+number+"';";
+        Cursor c = db.rawQuery(sql, null);
+        return c;
+    }
+
+    public boolean updateStatus(int id,String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CALL_STATUS, status);
+        db.update(CALL_TABLE, contentValues, CALL_ID+ "=" + id, null);
+        db.close();
+        return true;
+    }
+
+
+    //unsynced data
+    public Cursor getUnsyncedCalls() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM " + CALL_TABLE + " WHERE " + CALL_AUDIO_STATUS + " = '"+Constants.offline+"';";
+        Log.d("mydatao",sql);
+        Cursor c = db.rawQuery(sql, null);
+        return c;
+    }
+
+    public Cursor getUnsyncedRemarks() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE " + REMARKS_STATUS + " = "+Constants.offline+";";
+        Cursor c = db.rawQuery(sql, null);
+        return c;
+    }
+
+    public Cursor getUnsyncedTags() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM " + TAG_TABLE + " WHERE " + TAG_STATUS + " = "+Constants.offline+";";
         Cursor c = db.rawQuery(sql, null);
         return c;
     }

@@ -10,7 +10,7 @@ public class Modal_Call {
     String CALL_NAME;
     String CALL_AUDIO;
     String CALL_AUDIO_STATUS;
-    String CALL_REMARKS;
+
 
     public Modal_Call(String CALL_ID, String CALL_NUMBER, String CALL_DATE, String CALL_NAME) {
         this.CALL_NUMBER = CALL_NUMBER;
@@ -19,7 +19,7 @@ public class Modal_Call {
         this.CALL_NAME = CALL_NAME;
     }
 
-    public Modal_Call(String CALL_ID, String CALL_NUMBER, String CALL_MSG, String CALL_WAP, String CALL_DATE, String CALL_STATUS, String CALL_NAME, String CALL_AUDIO, String CALL_AUDIO_STATUS, String CALL_REMARKS) {
+    public Modal_Call(String CALL_ID, String CALL_NUMBER, String CALL_MSG, String CALL_WAP, String CALL_DATE, String CALL_STATUS, String CALL_NAME, String CALL_AUDIO, String CALL_AUDIO_STATUS) {
         this.CALL_ID = CALL_ID;
         this.CALL_NUMBER = CALL_NUMBER;
         this.CALL_MSG = CALL_MSG;
@@ -29,7 +29,7 @@ public class Modal_Call {
         this.CALL_NAME = CALL_NAME;
         this.CALL_AUDIO = CALL_AUDIO;
         this.CALL_AUDIO_STATUS = CALL_AUDIO_STATUS;
-        this.CALL_REMARKS = CALL_REMARKS;
+
     }
 
     public String getCALL_ID() {
@@ -68,7 +68,5 @@ public class Modal_Call {
         return CALL_AUDIO_STATUS;
     }
 
-    public String getCALL_REMARKS() {
-        return CALL_REMARKS;
-    }
+
 }
