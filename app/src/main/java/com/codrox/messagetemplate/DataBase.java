@@ -45,6 +45,7 @@ public class DataBase extends SQLiteOpenHelper {
     public final static String TAG_NAME = "tag";
     public final static String TAG_STATUS = "status";
 
+
     private final static int DB_VERSION = 1;
 
     Context c;
@@ -59,6 +60,7 @@ public class DataBase extends SQLiteOpenHelper {
         String tag_table = "CREATE TABLE " + TAG_TABLE + "("
                 + TAG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + TAG_NUMBER + " VARCHAR, "
+                + TAG_STATUS + " VARCHAR, "
                 + TAG_NAME + " VARCHAR);";
 
         String sql1 = "CREATE TABLE " + TEMP_TABLE + "("
@@ -82,6 +84,7 @@ public class DataBase extends SQLiteOpenHelper {
                 + REMARKS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + NUMBER + " VARCHAR, "
                 + REMARKS + " VARCHAR, "
+                + REMARKS_STATUS + " VARCHAR, "
                 + REMARKS_DATE + " VARCHAR);";
 
         db.execSQL(sql1);
@@ -96,19 +99,20 @@ public class DataBase extends SQLiteOpenHelper {
     }
 
     //Tag Functions
-    public void insertTag(String num, String tag) {
+    public void insertTag(String num, String tag, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
         cv.put(TAG_NUMBER, num);
         cv.put(TAG_NAME, tag);
+        cv.put(TAG_STATUS, status);
 
         db.insert(TAG_TABLE, null, cv);
     }
 
     public Cursor readTag(String num) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM "+TAG_TABLE+" WHERE "+TAG_NUMBER+"='"+num+"';";
+        String sql = "SELECT * FROM " + TAG_TABLE + " WHERE " + TAG_NUMBER + "='" + num + "';";
         Cursor c = db.rawQuery(sql, null);
         return c;
     }
@@ -141,16 +145,25 @@ public class DataBase extends SQLiteOpenHelper {
 
     public Cursor readDistinctCalls() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM "+CALL_TABLE+" WHERE "+CALL_ID+" IN (SELECT MAX("+CALL_ID+") FROM "+CALL_TABLE+" GROUP BY "+CALL_NUMBER+");";
+        String sql = "SELECT * FROM " + CALL_TABLE + " WHERE " + CALL_ID + " IN (SELECT MAX(" + CALL_ID + ") FROM " + CALL_TABLE + " GROUP BY " + CALL_NUMBER + ");";
         Cursor c = db.rawQuery(sql, null);
         return c;
     }
 
     public Cursor readNumberData(String number) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM "+CALL_TABLE+" WHERE "+CALL_NUMBER+"='"+number+"';";
+        String sql = "SELECT * FROM " + CALL_TABLE + " WHERE " + CALL_NUMBER + "='" + number + "';";
         Cursor c = db.rawQuery(sql, null);
         return c;
+    }
+
+    public boolean updateAudioStatus(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CALL_AUDIO_STATUS, Constants.online);
+        db.update(CALL_TABLE, contentValues, CALL_ID + "=?", new String[]{id});
+        db.close();
+        return true;
     }
 
     public void updateCallName(String name, String number) {
@@ -159,7 +172,7 @@ public class DataBase extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
         cv.put(CALL_NAME, name);
 
-        db.update(CALL_TABLE, cv, CALL_NUMBER+"=?", new String[]{number});
+        db.update(CALL_TABLE, cv, CALL_NUMBER + "=?", new String[]{number});
     }
 
     public void updateCallText(String id, String name, String msg, String status) {
@@ -170,7 +183,8 @@ public class DataBase extends SQLiteOpenHelper {
         cv.put(CALL_NAME, name);
         cv.put(CALL_STATUS, status);
 
-        db.update(CALL_TABLE, cv, CALL_ID+"=?", new String[]{id});
+        db.update(CALL_TABLE, cv, CALL_ID + "=?", new String[]{id});
+        db.close();
     }
 
     public void updateCallWap(String id, String name, String msg, String status) {
@@ -180,7 +194,8 @@ public class DataBase extends SQLiteOpenHelper {
         cv.put(CALL_WAP, msg);
         cv.put(CALL_STATUS, status);
         cv.put(CALL_NAME, name);
-        db.update(CALL_TABLE, cv, CALL_ID+"=?", new String[]{id});
+        db.update(CALL_TABLE, cv, CALL_ID + "=?", new String[]{id});
+        db.close();
     }
 
     //Templates Functions
@@ -193,6 +208,7 @@ public class DataBase extends SQLiteOpenHelper {
         cv.put(TEMP_CAT, category);
 
         db.insert(TEMP_TABLE, null, cv);
+        db.close();
     }
 
     public Cursor readAllTemp() {
@@ -210,63 +226,78 @@ public class DataBase extends SQLiteOpenHelper {
         cv.put(TEMP_TITLE, title);
         cv.put(TEMP_CAT, cat);
 
-        db.update(TEMP_TABLE, cv, TEMP_ID+"=?", new String[]{id});
+        db.update(TEMP_TABLE, cv, TEMP_ID + "=?", new String[]{id});
+        db.close();
     }
 
     public void deleteTemp(String id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TEMP_TABLE, TEMP_ID+"=?", new String[]{id});
+        db.delete(TEMP_TABLE, TEMP_ID + "=?", new String[]{id});
+        db.close();
     }
 
     //Remarks Table
-    public void insertRemark(String number, String remark, String date) {
+    public void insertRemark(String number, String remark, String date, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
         cv.put(NUMBER, number);
         cv.put(REMARKS, remark);
         cv.put(REMARKS_DATE, date);
+        cv.put(REMARKS_STATUS, status);
 
         db.insert(REMARKS_TABLE, null, cv);
+        db.close();
     }
 
     public Cursor readRemarks(String number) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE "+NUMBER+"='"+number+"';";
+        String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE " + NUMBER + "='" + number + "';";
         Cursor c = db.rawQuery(sql, null);
         return c;
-    }
-
-    public boolean updateStatus(int id,String status) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(CALL_STATUS, status);
-        db.update(CALL_TABLE, contentValues, CALL_ID+ "=" + id, null);
-        db.close();
-        return true;
     }
 
 
     //unsynced data
     public Cursor getUnsyncedCalls() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM " + CALL_TABLE + " WHERE " + CALL_AUDIO_STATUS + " = '"+Constants.offline+"';";
-        Log.d("mydatao",sql);
+        String sql = "SELECT * FROM " + CALL_TABLE + " WHERE " + CALL_AUDIO_STATUS + "='" + Constants.offline + "';";
+        Log.d("mydatao", sql);
         Cursor c = db.rawQuery(sql, null);
         return c;
     }
 
     public Cursor getUnsyncedRemarks() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE " + REMARKS_STATUS + " = "+Constants.offline+";";
+        String sql = "SELECT * FROM " + REMARKS_TABLE + " WHERE " + REMARKS_STATUS + "='" + Constants.offline + "';";
         Cursor c = db.rawQuery(sql, null);
+
         return c;
     }
 
     public Cursor getUnsyncedTags() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql = "SELECT * FROM " + TAG_TABLE + " WHERE " + TAG_STATUS + " = "+Constants.offline+";";
+        String sql = "SELECT * FROM " + TAG_TABLE + " WHERE " + TAG_STATUS + "='" + Constants.offline + "';";
         Cursor c = db.rawQuery(sql, null);
+
         return c;
+    }
+
+    public boolean updateRemarks(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(REMARKS_STATUS, Constants.online);
+        db.update(REMARKS_TABLE, contentValues, REMARKS_ID + "=?", new String[]{id});
+        db.close();
+        return true;
+    }
+
+    public boolean updateTags(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(TAG_STATUS, Constants.online);
+        db.update(TAG_TABLE, contentValues, TAG_ID + "=?", new String[]{id});
+        db.close();
+        return true;
     }
 }

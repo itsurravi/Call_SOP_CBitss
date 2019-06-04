@@ -173,7 +173,7 @@ public class MessageInfoActivity extends AppCompatActivity {
         }
 
         edit_tag.setText("");
-        db.insertTag(CALL_NUMBER, tag);
+        db.insertTag(CALL_NUMBER, tag, Constants.offline);
         new readTag().execute();
     }
 
@@ -195,7 +195,7 @@ public class MessageInfoActivity extends AppCompatActivity {
                     ed.setError("Please Fill this Field");
                     ed.requestFocus();
                 } else {
-                    db.insertRemark(CALL_NUMBER, remark, String.valueOf(System.currentTimeMillis()));
+                    db.insertRemark(CALL_NUMBER, remark, String.valueOf(System.currentTimeMillis()), Constants.offline);
                     new readData().execute();
                     ad.dismiss();
 

@@ -1,6 +1,8 @@
 package com.codrox.messagetemplate.Activity;
 
+import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,11 +30,16 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.codrox.messagetemplate.DataBase;
 import com.codrox.messagetemplate.Modals.Modal_Call;
+import com.codrox.messagetemplate.Modals.Remarks;
+import com.codrox.messagetemplate.Modals.Tags;
 import com.codrox.messagetemplate.Prefrence;
 import com.codrox.messagetemplate.R;
 
 import net.gotev.uploadservice.MultipartUploadRequest;
+import net.gotev.uploadservice.ServerResponse;
+import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
+import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,16 +58,25 @@ public class MainActivity extends AppCompatActivity {
     DataBase db;
     Button b1, b2;
     String UPLOAD_URL = "http://fossfoundation.com/SOP/newone.php";
+    String UPLOAD_URLR = "http://fossfoundation.com/SOP/remark.php";
+    String UPLOAD_URLT = "http://fossfoundation.com/SOP/tag.php";
+
     public final int PERMISSION_CODE = 12345;
 
     Prefrence sp;
     List<Modal_Call> call;
+    List<Remarks> remarks;
+    List<Tags> tags;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         call = new ArrayList<>();
+        remarks = new ArrayList<>();
+        tags = new ArrayList<>();
+
+
         db = new DataBase(this);
 
         b1 = findViewById(R.id.btn_calls);
@@ -186,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         getData();
         return super.onOptionsItemSelected(item);
     }
@@ -194,63 +209,267 @@ public class MainActivity extends AppCompatActivity {
     public void getData() {
         Toast.makeText(this, "check", Toast.LENGTH_SHORT).show();
 
-        Cursor cr = db.getUnsyncedCalls();
+        try {
+            Cursor cr = db.getUnsyncedCalls();
 
-        if (cr != null && cr.getCount() > 0) {
-            cr.moveToFirst();
+            if (cr != null && cr.getCount() > 0) {
+                cr.moveToFirst();
 
-            do {
-                String CALL_ID = cr.getString(cr.getColumnIndex(DataBase.CALL_ID));
-                String CALL_NUMBER = cr.getString(cr.getColumnIndex(DataBase.CALL_NUMBER));
-                String CALL_MSG = cr.getString(cr.getColumnIndex(DataBase.CALL_MSG));
-                String CALL_WAP = cr.getString(cr.getColumnIndex(DataBase.CALL_WAP));
-                String CALL_DATE = cr.getString(cr.getColumnIndex(DataBase.CALL_DATE));
-                String CALL_STATUS = cr.getString(cr.getColumnIndex(DataBase.CALL_STATUS));
-                String CALL_NAME = cr.getString(cr.getColumnIndex(DataBase.CALL_NAME));
-                String CALL_AUDIO = cr.getString(cr.getColumnIndex(DataBase.CALL_AUDIO));
-                String CALL_AUDIO_STATUS = cr.getString(cr.getColumnIndex(DataBase.CALL_AUDIO_STATUS));
+                do {
+                    String CALL_ID = cr.getString(cr.getColumnIndex(DataBase.CALL_ID));
+                    String CALL_NUMBER = cr.getString(cr.getColumnIndex(DataBase.CALL_NUMBER));
+                    String CALL_MSG = cr.getString(cr.getColumnIndex(DataBase.CALL_MSG));
+                    String CALL_WAP = cr.getString(cr.getColumnIndex(DataBase.CALL_WAP));
+                    String CALL_DATE = cr.getString(cr.getColumnIndex(DataBase.CALL_DATE));
+                    String CALL_STATUS = cr.getString(cr.getColumnIndex(DataBase.CALL_STATUS));
+                    String CALL_NAME = cr.getString(cr.getColumnIndex(DataBase.CALL_NAME));
+                    String CALL_AUDIO = cr.getString(cr.getColumnIndex(DataBase.CALL_AUDIO));
+                    String CALL_AUDIO_STATUS = cr.getString(cr.getColumnIndex(DataBase.CALL_AUDIO_STATUS));
 
-                Modal_Call m = new Modal_Call(CALL_ID, CALL_NUMBER, CALL_MSG, CALL_WAP, CALL_DATE, CALL_STATUS, CALL_NAME, CALL_AUDIO, CALL_AUDIO_STATUS);
-                call.add(m);
+                    Modal_Call m = new Modal_Call(CALL_ID, CALL_NUMBER, CALL_MSG, CALL_WAP, CALL_DATE, CALL_STATUS, CALL_NAME, CALL_AUDIO, CALL_AUDIO_STATUS);
+                    call.add(m);
+                }
+
+                while (cr.moveToNext());
             }
 
-            while (cr.moveToNext());
+            Cursor c = db.getUnsyncedRemarks();
+            if (c != null && c.getCount() > 0) {
+                c.moveToFirst();
 
-            uploadMultipart(0);
-            //Toast.makeText(this, call.get(0).getCALL_NUMBER(), Toast.LENGTH_SHORT).show();
+                do {
+                    String REMARKS_ID = c.getString(c.getColumnIndex(DataBase.REMARKS_ID));
+                    String REMARKS = c.getString(c.getColumnIndex(DataBase.REMARKS));
+                    String NUMBER = c.getString(c.getColumnIndex(DataBase.NUMBER));
+                    String REMARKS_DATE = c.getString(c.getColumnIndex(DataBase.REMARKS_DATE));
+
+                    Remarks m = new Remarks(REMARKS_ID, REMARKS, NUMBER, REMARKS_DATE);
+                    remarks.add(m);
+                }
+
+                while (c.moveToNext());
+            }
+
+
+            Cursor ct = db.getUnsyncedTags();
+            if (ct != null && ct.getCount() > 0) {
+                ct.moveToFirst();
+
+                do {
+                    String TAG_ID = ct.getString(ct.getColumnIndex(DataBase.TAG_ID));
+                    String TAG_NUMBER = ct.getString(ct.getColumnIndex(DataBase.TAG_NUMBER));
+                    String TAG_NAME = ct.getString(ct.getColumnIndex(DataBase.TAG_NAME));
+
+
+                    Tags t = new Tags(TAG_ID, TAG_NUMBER, TAG_NAME);
+                    tags.add(t);
+                }
+
+                while (ct.moveToNext());
+            }
+
+
+        } catch (Exception e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        Log.d("position", String.valueOf(call.size()));
+
+        uploadMultipart(0);
+
+        uploadMultipartTags(0);
+        uploadMultipartRemarks(0);
+
+//            Toast.makeText(this, call.get(0).getCALL_NUMBER(), Toast.LENGTH_SHORT).show();
+
+    }
+
+    public void uploadMultipart(final int pos) {
+        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+        if (pos >= 0 && call.size() > pos) {
+            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
+            //getting name for the image
+            final Modal_Call m = call.get(pos);
+
+            final ProgressDialog pd = new ProgressDialog(this);
+            pd.setCancelable(false);
+            pd.setMessage("Uploading File no. " + (pos + 1) + " out of " + call.size());
+            pd.show();
+            //Uploading code
+            try {
+                String uploadId = UUID.randomUUID().toString();
+
+                //Creating a multi part request
+                new MultipartUploadRequest(this, uploadId, UPLOAD_URL)
+                        .addFileToUpload(m.getCALL_AUDIO(), "audio")
+                        .addParameter("id", m.getCALL_ID())
+                        .addParameter("name", m.getCALL_NAME())
+                        .addParameter("number", m.getCALL_NUMBER())
+                        .addParameter("msg", m.getCALL_MSG())
+                        .addParameter("wap", m.getCALL_WAP())
+                        .addParameter("date", m.getCALL_DATE())
+                        .addParameter("status", m.getCALL_STATUS())
+                        .addParameter("audio_status", m.getCALL_AUDIO_STATUS())
+                        .addParameter("users", "Ritika")
+                        .setNotificationConfig(new UploadNotificationConfig())
+                        .setMaxRetries(2)
+                        .setDelegate(new UploadStatusDelegate() {
+                            @Override
+                            public void onProgress(Context context, UploadInfo uploadInfo) {
+
+                            }
+
+                            @Override
+                            public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+                                pd.dismiss();
+                            }
+
+                            @Override
+                            public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+                                db.updateAudioStatus(m.getCALL_ID());
+                                pd.dismiss();
+                                uploadMultipart(pos + 1);
+                            }
+
+                            @Override
+                            public void onCancelled(Context context, UploadInfo uploadInfo) {
+                                pd.dismiss();
+                            }
+                        })
+                        .startUpload();
+
+                //Starting the upload
+
+
+            } catch (Exception exc) {
+                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                pd.dismiss();
+            } finally {
+
+            }
+        }
+
+    }
+
+
+    public void uploadMultipartRemarks(final int pos) {
+        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+
+        if (pos >= 0 && remarks.size() > pos) {
+            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
+            //getting name for the image
+            final Remarks m = remarks.get(pos);
+
+            final ProgressDialog pd = new ProgressDialog(this);
+            pd.setCancelable(false);
+            pd.setMessage("Uploading File no. " + (pos + 1) + " out of " + remarks.size());
+            pd.show();
+            //Uploading code
+            try {
+                String uploadId = UUID.randomUUID().toString();
+
+                //Creating a multi part request
+                new MultipartUploadRequest(this, uploadId, UPLOAD_URLR)
+
+                        .addParameter("r_id", m.getId())
+                        .addParameter("r_remark", m.getRemarks())
+                        .addParameter("r_number", m.getNumber())
+                        .addParameter("r_date", m.getRemarks_date())
+                        .setNotificationConfig(new UploadNotificationConfig())
+                        .setMaxRetries(2)
+                        .setDelegate(new UploadStatusDelegate() {
+                            @Override
+                            public void onProgress(Context context, UploadInfo uploadInfo) {
+
+                            }
+
+                            @Override
+                            public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+                                pd.dismiss();
+                            }
+
+                            @Override
+                            public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+                                db.updateRemarks(m.getId());
+                                pd.dismiss();
+                                uploadMultipart(pos + 1);
+                            }
+
+                            @Override
+                            public void onCancelled(Context context, UploadInfo uploadInfo) {
+                                pd.dismiss();
+                            }
+                        })
+                        .startUpload();
+
+                //Starting the upload
+
+
+            } catch (Exception exc) {
+                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                pd.dismiss();
+            } finally {
+
+            }
+        }
+
+    }
+
+
+    public void uploadMultipartTags(final int pos) {
+        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+        if (pos >= 0 && tags.size() > pos) {
+            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
+            //getting name for the image
+            final Tags t = tags.get(pos);
+
+            final ProgressDialog pd = new ProgressDialog(this);
+            pd.setCancelable(false);
+            pd.setMessage("Uploading File no. " + (pos + 1) + " out of " + tags.size());
+            pd.show();
+            //Uploading code
+            try {
+                String uploadId = UUID.randomUUID().toString();
+
+                //Creating a multi part request
+                new MultipartUploadRequest(this, uploadId, UPLOAD_URLT)
+                        .addParameter("t_id", t.getTAG_ID())
+                        .addParameter("t_name", t.getTAG_NAME())
+                        .addParameter("t_number", t.getTAG_NUMBER())
+                        .setNotificationConfig(new UploadNotificationConfig())
+                        .setMaxRetries(2)
+                        .setDelegate(new UploadStatusDelegate() {
+                            @Override
+                            public void onProgress(Context context, UploadInfo uploadInfo) {
+
+                            }
+
+                            @Override
+                            public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+                                pd.dismiss();
+                            }
+
+                            @Override
+                            public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+                                db.updateTags(t.getTAG_ID());
+                                pd.dismiss();
+                                uploadMultipart(pos + 1);
+                            }
+
+                            @Override
+                            public void onCancelled(Context context, UploadInfo uploadInfo) {
+                                pd.dismiss();
+                            }
+                        })
+                        .startUpload();
+                //Starting the upload
+            } catch (Exception exc) {
+                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                pd.dismiss();
+            } finally {
+                Toast.makeText(this, "done", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
-    public void uploadMultipart(int pos) {
-        //getting name for the image
-        final Modal_Call m = call.get(pos);
-
-        //Uploading code
-        try {
-            String uploadId = UUID.randomUUID().toString();
-
-            //Creating a multi part request
-            new MultipartUploadRequest(this, uploadId, UPLOAD_URL)
-                    .addFileToUpload( m.getCALL_AUDIO(),"audio")
-                    .addParameter("id", m.getCALL_ID())
-                    .addParameter("name", m.getCALL_NAME())
-                    .addParameter("number", m.getCALL_NUMBER())
-                    .addParameter("msg", m.getCALL_MSG())
-                    .addParameter("wap", m.getCALL_WAP())
-                    .addParameter("date", m.getCALL_DATE())
-                    .addParameter("status", m.getCALL_STATUS())
-                    .addParameter("audio_status", m.getCALL_AUDIO_STATUS())
-                    .addParameter("users", "Ritika")
-                    .setNotificationConfig(new UploadNotificationConfig())
-                    .setMaxRetries(2)
-                    .startUpload();
-
-            //Starting the upload
-
-
-        } catch (Exception exc) {
-            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
-    }
 }

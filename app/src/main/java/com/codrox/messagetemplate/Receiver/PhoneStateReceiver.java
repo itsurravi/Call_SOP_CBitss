@@ -134,7 +134,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
             SimpleDateFormat sdf = new SimpleDateFormat("MMM-dd-yyyy-HH:mm:ss");
             Date resultdate = new Date(time);
             filename = savedNumber + "-" + sdf.format(resultdate);
-            audio = new File(dir, filename + ".3gpp");
+            audio = new File(dir, filename + ".mp3");
         } catch (Exception e) {
             e.printStackTrace();
         }
