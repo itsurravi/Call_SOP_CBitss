@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             Cursor cr = db.getUnsyncedCalls();
-
+            call.clear();
             if (cr != null && cr.getCount() > 0) {
                 cr.moveToFirst();
 
@@ -234,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Cursor c = db.getUnsyncedRemarks();
+            remarks.clear();
             if (c != null && c.getCount() > 0) {
                 c.moveToFirst();
 
@@ -252,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             Cursor ct = db.getUnsyncedTags();
+            tags.clear();
             if (ct != null && ct.getCount() > 0) {
                 ct.moveToFirst();
 
@@ -276,7 +278,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("position", String.valueOf(call.size()));
 
         uploadMultipart(0);
-
         uploadMultipartTags(0);
         uploadMultipartRemarks(0);
 
@@ -285,7 +286,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void uploadMultipart(final int pos) {
-        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+        Log.d("tag_1", "hello");
+        Toast.makeText(this, "Inside multipart 1", Toast.LENGTH_SHORT).show();
         if (pos >= 0 && call.size() > pos) {
             Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
             //getting name for the image
@@ -293,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
             final ProgressDialog pd = new ProgressDialog(this);
             pd.setCancelable(false);
-            pd.setMessage("Uploading File no. " + (pos + 1) + " out of " + call.size());
+            pd.setMessage("Uploading Audio no. " + (pos + 1) + " out of " + call.size());
             pd.show();
             //Uploading code
             try {
@@ -322,6 +324,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                                 pd.dismiss();
+                                Toast.makeText(context, exception.getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -353,7 +356,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void uploadMultipartRemarks(final int pos) {
-        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+        Log.d("tag_2", "hello");
+        Toast.makeText(this, "Inside multipart 2", Toast.LENGTH_SHORT).show();
 
         if (pos >= 0 && remarks.size() > pos) {
             Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
@@ -362,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
 
             final ProgressDialog pd = new ProgressDialog(this);
             pd.setCancelable(false);
-            pd.setMessage("Uploading File no. " + (pos + 1) + " out of " + remarks.size());
+            pd.setMessage("Uploading Remarks no. " + (pos + 1) + " out of " + remarks.size());
             pd.show();
             //Uploading code
             try {
@@ -417,7 +421,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void uploadMultipartTags(final int pos) {
-        Toast.makeText(this, "Inside mulripart", Toast.LENGTH_SHORT).show();
+        Log.d("tag_3", "hello");
+        Toast.makeText(this, "Inside multipart 3", Toast.LENGTH_SHORT).show();
         if (pos >= 0 && tags.size() > pos) {
             Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
             //getting name for the image

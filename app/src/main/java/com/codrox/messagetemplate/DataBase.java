@@ -76,7 +76,7 @@ public class DataBase extends SQLiteOpenHelper {
                 + CALL_MSG + " TEXT, "
                 + CALL_WAP + " TEXT, "
                 + CALL_DATE + " VARCHAR, "
-                + CALL_AUDIO + " VARCHAR, "
+                + CALL_AUDIO + " TEXT, "
                 + CALL_AUDIO_STATUS + " VARCHAR, "
                 + CALL_STATUS + " VARCHAR);";
 

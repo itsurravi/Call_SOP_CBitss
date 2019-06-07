@@ -30,6 +30,8 @@ public class PhoneStateReceiver extends BroadcastReceiver {
     private static String savedNumber;
     DataBase db;
 
+    Context c;
+
     private static String filename;
     private static File audio;
     private static Uri newUri;
@@ -37,6 +39,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        this.c = context;
         db = new DataBase(context);
         if (intent.getAction().equals("android.intent.action.NEW_OUTGOING_CALL")) {
             savedNumber = intent.getExtras().getString("android.intent.extra.PHONE_NUMBER");
@@ -141,7 +144,10 @@ public class PhoneStateReceiver extends BroadcastReceiver {
         r = new MediaRecorder();
         r.setAudioSource(MediaRecorder.AudioSource.MIC);
         r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        r.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        r.setAudioChannels(1);
+        r.setAudioSamplingRate(44100);
+        r.setAudioEncodingBitRate(192000);
         r.setOutputFile(audio.getAbsolutePath());
         try {
             r.prepare();
@@ -154,6 +160,26 @@ public class PhoneStateReceiver extends BroadcastReceiver {
     private void recordingStop() {
         r.stop();
         r.release();
+        addRecordingToMediaLibrary();
+        r=null;
+    }
+
+    private void addRecordingToMediaLibrary() {
+        ContentValues values = new ContentValues(4);
+        long current = System.currentTimeMillis();
+        values.put(MediaStore.Audio.Media.TITLE, "audio" + audio.getName());
+        values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
+        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
+        values.put(MediaStore.Audio.Media.DATA, audio.getAbsolutePath());
+
+        //creating content resolver and storing it in the external content uri
+        ContentResolver contentResolver = c.getContentResolver();
+        Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        newUri = contentResolver.insert(base, values);
+
+        //sending broadcast message to scan the media file so that it can be available
+        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
+//        Toast.makeText(c, "Added File " + newUri, Toast.LENGTH_LONG).show();
     }
 
 }
