@@ -2,7 +2,9 @@ package com.codrox.messagetemplate.Adapter;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recording_Adapter.MyHolder> {
 
@@ -49,6 +52,7 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
         final Modal_Audio_Recording m = recordings.get(i);
         myHolder.title.setText(setDate(m.getDate()));
         myHolder.audio_status.setText(m.getAudio_status());
+        myHolder.audio_duration.setText(getAudioDuration(m.getAudio_path()));
         if (m.getAudio_status().equals(Constants.online)) {
             myHolder.img_audio_status.setImageResource(R.drawable.ic_sent_circle);
         } else {
@@ -68,6 +72,40 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
         return recordings.size();
     }
 
+    private String getAudioDuration(String filePath)
+    {
+        Uri uri = Uri.parse(filePath);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(c,uri);
+        String durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+        return String.format("%d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr)),
+                TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(durationStr)) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr))));
+    }
+
+    class MyHolder extends RecyclerView.ViewHolder {
+
+
+        LinearLayout layout;
+        TextView title, audio_status, audio_duration;
+        ImageView img_audio_status;
+
+        public MyHolder(@NonNull View itemView) {
+            super(itemView);
+            layout = itemView.findViewById(R.id.audio_layout);
+            title = itemView.findViewById(R.id.audio_filename);
+            img_audio_status = itemView.findViewById(R.id.img_audio_status);
+            audio_status = itemView.findViewById(R.id.audio_status);
+            audio_duration = itemView.findViewById(R.id.audio_duration);
+        }
+    }
+
+    public interface onItemClick {
+        void itemClick(int position);
+    }
+
     private String setDate(String call_date) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy -- hh:mm a");
@@ -77,25 +115,6 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
         } catch (Exception e) {
             return "";
         }
-    }
-
-    class MyHolder extends RecyclerView.ViewHolder {
-
-        LinearLayout layout;
-        TextView title, audio_status;
-        ImageView img_audio_status;
-
-        public MyHolder(@NonNull View itemView) {
-            super(itemView);
-            layout = itemView.findViewById(R.id.audio_layout);
-            title = itemView.findViewById(R.id.audio_filename);
-            img_audio_status = itemView.findViewById(R.id.img_audio_status);
-            audio_status = itemView.findViewById(R.id.audio_status);
-        }
-    }
-
-    public interface onItemClick{
-        void itemClick(int position);
     }
 
     public void setOnItemClick(onItemClick click) {

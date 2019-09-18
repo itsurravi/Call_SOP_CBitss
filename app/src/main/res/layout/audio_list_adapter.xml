@@ -28,6 +28,11 @@
                 android:padding="5dp"
                 android:text="Hello How Are You"
                 android:textSize="16sp" />
+            <TextView
+                android:id="@+id/audio_duration"
+                android:text="3:00"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 
