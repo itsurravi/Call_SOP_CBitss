@@ -13,6 +13,7 @@ public class Prefrence {
     private static final String username = "username";
     private static final String password = "password";
     private static final String login = "login";
+    private static final String record_path = "audio_path";
 
     SharedPreferences sp;
     SharedPreferences.Editor ed;
@@ -46,5 +47,15 @@ public class Prefrence {
     public boolean loggedIn()
     {
         return sp.getBoolean(login, false);
+    }
+
+    public void setAudioPath(String path)
+    {
+        ed.putString(record_path, path);
+        ed.commit();
+    }
+
+    public String getAudioPath() {
+        return sp.getString(record_path, null);
     }
 }

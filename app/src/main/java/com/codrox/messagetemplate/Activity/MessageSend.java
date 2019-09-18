@@ -23,7 +23,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.codrox.messagetemplate.Adapter.Temp_List_Adapter;
 import com.codrox.messagetemplate.Constants;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.Modals.Model_Temp;
 import com.codrox.messagetemplate.R;
 

@@ -10,7 +10,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.codrox.messagetemplate.Constants;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.R;
 
 public class AddTemplateActivity extends AppCompatActivity {

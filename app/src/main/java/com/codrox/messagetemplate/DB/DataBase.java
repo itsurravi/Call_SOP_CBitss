@@ -1,4 +1,4 @@
-package com.codrox.messagetemplate;
+package com.codrox.messagetemplate.DB;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,6 +6,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.codrox.messagetemplate.Constants;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DataBase extends SQLiteOpenHelper {
 
@@ -166,6 +178,15 @@ public class DataBase extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean updateAudioPath(String id, String path) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CALL_AUDIO, path);
+        db.update(CALL_TABLE, contentValues, CALL_ID + "=?", new String[]{id});
+        db.close();
+        return true;
+    }
+
     public void updateCallName(String name, String number) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -299,5 +320,79 @@ public class DataBase extends SQLiteOpenHelper {
         db.update(TAG_TABLE, contentValues, TAG_ID + "=?", new String[]{id});
         db.close();
         return true;
+    }
+
+    public void deleteOldRecord(String currentDate) {
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            String date = getDate(currentDate);
+            String sql = "select * from " + CALL_TABLE + " where " + CALL_DATE + "<" + date+";";
+            Log.d("SQL_QUERY", sql);
+            Cursor c = db.rawQuery(sql, null);
+
+            List<String> list = new ArrayList<>();
+            c.moveToFirst();
+
+            do {
+                try
+                {
+                    list.add(c.getString(c.getColumnIndex(CALL_NUMBER)));
+                    deleteFile(c.getString(c.getColumnIndex(CALL_AUDIO)));
+                }
+                catch(Exception e)
+                {
+
+                }
+            }
+            while (c.moveToNext());
+
+            c.close();
+
+            Set<String> set = new HashSet<>(list);
+
+            List<String> uniqueNumbers = new ArrayList<>();
+
+            uniqueNumbers.addAll(set);
+
+            db.delete(CALL_TABLE, CALL_DATE + " < "+date,null);
+
+            for (String num : uniqueNumbers) {
+                db.delete(REMARKS_TABLE, NUMBER + "=?", new String[]{num});
+                db.delete(TAG_TABLE, TAG_NUMBER + "=?", new String[]{num});
+            }
+
+            db.close();
+        } catch (Exception e) {
+            Log.d("DataDeletion", e.getMessage());
+        }
+    }
+
+    private void deleteFile(String fileName) {
+        File f = new File(fileName);
+        if(f.exists())
+        {
+            f.delete();
+        }
+    }
+
+    private String getDate(String currentDate) {
+        SimpleDateFormat myFormat = new SimpleDateFormat("dd/MMM/yyyy");
+        try {
+            Calendar c = Calendar.getInstance();
+            Date date2 = new Date(Long.parseLong(currentDate));
+            c.setTime(date2);
+            c.add(Calendar.DAY_OF_MONTH, -30);
+
+            String t = myFormat.format(c.getTime());
+
+            Date d = myFormat.parse(t);
+
+            long m = d.getTime();
+
+            return String.valueOf(m);
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

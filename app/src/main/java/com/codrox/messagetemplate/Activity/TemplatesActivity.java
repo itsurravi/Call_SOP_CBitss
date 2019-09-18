@@ -18,7 +18,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.codrox.messagetemplate.Constants;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.Modals.Model_Temp;
 import com.codrox.messagetemplate.R;
 import com.codrox.messagetemplate.Adapter.Temp_List_Adapter;

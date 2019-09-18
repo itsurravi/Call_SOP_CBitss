@@ -1,13 +1,17 @@
 package com.codrox.messagetemplate.Activity;
 
 import android.app.ProgressDialog;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -21,19 +25,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
+import com.codrox.messagetemplate.FileHandle;
 import com.codrox.messagetemplate.Modals.Modal_Call;
 import com.codrox.messagetemplate.Modals.Remarks;
 import com.codrox.messagetemplate.Modals.Tags;
 import com.codrox.messagetemplate.Prefrence;
 import com.codrox.messagetemplate.R;
+import com.codrox.messagetemplate.Receiver.FileUploadingService;
 
 import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.ServerResponse;
@@ -42,15 +41,15 @@ import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
+import static android.Manifest.permission.READ_CALL_LOG;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_PHONE_STATE;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.SEND_SMS;
+import static android.Manifest.permission.WRITE_CALL_LOG;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity {
@@ -68,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     List<Remarks> remarks;
     List<Tags> tags;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
         call = new ArrayList<>();
         remarks = new ArrayList<>();
         tags = new ArrayList<>();
-
 
         db = new DataBase(this);
 
@@ -156,17 +156,22 @@ public class MainActivity extends AppCompatActivity {
         int result2 = ContextCompat.checkSelfPermission(getApplicationContext(), READ_EXTERNAL_STORAGE);
         int result3 = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_EXTERNAL_STORAGE);
         int result4 = ContextCompat.checkSelfPermission(getApplicationContext(), RECORD_AUDIO);
+        int result5 = ContextCompat.checkSelfPermission(getApplicationContext(), READ_CALL_LOG);
+        int result6 = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_CALL_LOG);
 
         return result == PackageManager.PERMISSION_GRANTED
                 && result2 == PackageManager.PERMISSION_GRANTED
                 && result3 == PackageManager.PERMISSION_GRANTED
                 && result4 == PackageManager.PERMISSION_GRANTED
+                && result5 == PackageManager.PERMISSION_GRANTED
+                && result6 == PackageManager.PERMISSION_GRANTED
                 && result1 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
 
-        ActivityCompat.requestPermissions(this, new String[]{SEND_SMS, READ_PHONE_STATE, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, PERMISSION_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{SEND_SMS, READ_PHONE_STATE,
+                READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, RECORD_AUDIO, READ_CALL_LOG, WRITE_CALL_LOG}, PERMISSION_CODE);
 
     }
 
@@ -182,8 +187,10 @@ public class MainActivity extends AppCompatActivity {
                     boolean storage = grantResults[2] == PackageManager.PERMISSION_GRANTED;
                     boolean storage2 = grantResults[3] == PackageManager.PERMISSION_GRANTED;
                     boolean recording = grantResults[4] == PackageManager.PERMISSION_GRANTED;
+                    boolean call_log = grantResults[5] == PackageManager.PERMISSION_GRANTED;
+                    boolean call_log2 = grantResults[6] == PackageManager.PERMISSION_GRANTED;
 
-                    if (sms && phone && storage && storage2 && recording) {
+                    if (sms && phone && storage && storage2 && recording && call_log && call_log2) {
                         Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
@@ -202,9 +209,91 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        getData();
+        if(item.getItemId() == R.id.sync)
+        {
+//            getData();
+            ComponentName componentName = new ComponentName(this, FileUploadingService.class);
+
+            JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+
+            try {
+
+                List<JobInfo> l = scheduler.getAllPendingJobs();
+
+                if (l.size() <= 0) {
+
+                    JobInfo info = new JobInfo.Builder(122, componentName)
+                            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                            .setPersisted(true)
+                            .setMinimumLatency(7000)
+                            .build();
+
+                    int result = scheduler.schedule(info);
+
+                    if (result == JobScheduler.RESULT_SUCCESS) {
+                        Log.d("JOBSCHEDULE", "Job Scheduled");
+                    } else {
+                        Log.d("JOBSCHEDULE", "Job Scheduling Failed");
+                    }
+                }
+
+            }
+            catch(Exception e)
+            {
+
+            }
+        }
+        else if(item.getItemId() == R.id.path)
+        {
+            choosePath();
+        }
+        else if(item.getItemId()==R.id.deleteRecord)
+        {
+
+            Toast.makeText(this, "Deletion of Old Record started", Toast.LENGTH_SHORT).show();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    db.deleteOldRecord(String.valueOf(System.currentTimeMillis()));
+                }
+            }).start();
+        }
         return super.onOptionsItemSelected(item);
     }
+
+    //Path Choose for audio recording Code
+
+    private void choosePath() {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
+        startActivityForResult(Intent.createChooser(i, "Choose directory"), 9999);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 9999) {
+            if (resultCode == RESULT_OK) {
+                try
+                {
+                    Log.i("Test", "Result URI " + data.getData());
+                    Uri uri = data.getData();
+                    Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri,
+                            DocumentsContract.getTreeDocumentId(uri));
+                    String path = FileHandle.getPath(this, docUri);
+                    sp.setAudioPath(path);
+                    Log.d("Test", path);
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(this, "Path is Not Valid", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Please Choose a Path", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /*//Data Upload to DB Server
 
     public void getData() {
         Toast.makeText(this, "check", Toast.LENGTH_SHORT).show();
@@ -287,9 +376,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void uploadMultipart(final int pos) {
         Log.d("tag_1", "hello");
-        Toast.makeText(this, "Inside multipart 1", Toast.LENGTH_SHORT).show();
         if (pos >= 0 && call.size() > pos) {
-            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
             //getting name for the image
             final Modal_Call m = call.get(pos);
 
@@ -324,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                                 pd.dismiss();
-                                Toast.makeText(context, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                                Log.d("Errorrr_1", exception.getMessage());
                             }
 
                             @Override
@@ -340,12 +427,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         })
                         .startUpload();
-
-                //Starting the upload
-
-
             } catch (Exception exc) {
-                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Errorrr_1.1", exc.getMessage());
                 pd.dismiss();
             } finally {
 
@@ -354,13 +437,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     public void uploadMultipartRemarks(final int pos) {
         Log.d("tag_2", "hello");
-        Toast.makeText(this, "Inside multipart 2", Toast.LENGTH_SHORT).show();
-
         if (pos >= 0 && remarks.size() > pos) {
-            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
             //getting name for the image
             final Remarks m = remarks.get(pos);
 
@@ -390,13 +469,14 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                                 pd.dismiss();
+                                Log.d("Errorrr_2", exception.getMessage());
                             }
 
                             @Override
                             public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
                                 db.updateRemarks(m.getId());
                                 pd.dismiss();
-                                uploadMultipart(pos + 1);
+                                uploadMultipartRemarks(pos + 1);
                             }
 
                             @Override
@@ -410,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             } catch (Exception exc) {
-                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Errorrr_2.1", exc.getMessage());
                 pd.dismiss();
             } finally {
 
@@ -419,12 +499,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     public void uploadMultipartTags(final int pos) {
         Log.d("tag_3", "hello");
-        Toast.makeText(this, "Inside multipart 3", Toast.LENGTH_SHORT).show();
         if (pos >= 0 && tags.size() > pos) {
-            Toast.makeText(this, "inside if", Toast.LENGTH_SHORT).show();
             //getting name for the image
             final Tags t = tags.get(pos);
 
@@ -452,13 +529,14 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
                                 pd.dismiss();
+                                Log.d("Errorrr_3", exception.getMessage());
                             }
 
                             @Override
                             public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
                                 db.updateTags(t.getTAG_ID());
                                 pd.dismiss();
-                                uploadMultipart(pos + 1);
+                                uploadMultipartTags(pos + 1);
                             }
 
                             @Override
@@ -469,12 +547,11 @@ public class MainActivity extends AppCompatActivity {
                         .startUpload();
                 //Starting the upload
             } catch (Exception exc) {
-                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("Errorrr_3.1", exc.getMessage());
                 pd.dismiss();
             } finally {
                 Toast.makeText(this, "done", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
+    }*/
 }

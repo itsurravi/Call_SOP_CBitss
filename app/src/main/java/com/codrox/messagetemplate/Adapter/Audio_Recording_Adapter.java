@@ -97,6 +97,7 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
     public interface onItemClick{
         void itemClick(int position);
     }
+
     public void setOnItemClick(onItemClick click) {
         this.click = click;
     }

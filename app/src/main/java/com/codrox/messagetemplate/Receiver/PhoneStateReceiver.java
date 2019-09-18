@@ -1,26 +1,15 @@
 package com.codrox.messagetemplate.Receiver;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.MediaRecorder;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.codrox.messagetemplate.Activity.AlertActivity;
 import com.codrox.messagetemplate.Constants;
-import com.codrox.messagetemplate.DataBase;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.codrox.messagetemplate.DB.DataBase;
 
 public class PhoneStateReceiver extends BroadcastReceiver {
 
@@ -32,10 +21,10 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 
     Context c;
 
-    private static String filename;
+    /*private static String filename;
     private static File audio;
     private static Uri newUri;
-    private static MediaRecorder r;
+    private static MediaRecorder r;*/
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -92,9 +81,9 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 
                 number = ab.toString();
 
-                recordingStart();
+//                recordingStart();
 
-                db.insertCall(number,"","", String.valueOf(System.currentTimeMillis()), Constants.Status_Pending,"", audio.getAbsolutePath(),Constants.offline);
+                db.insertCall(number,"","", String.valueOf(System.currentTimeMillis()), Constants.Status_Pending,"", "",Constants.offline);
 
                 Log.d("Data_offhook", number);
                 break;
@@ -120,66 +109,12 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                     context.startActivity(intent);
                 }
 
-                recordingStop();
+//                recordingStop();
 
                 break;
         }
         lastState = state;
     }
 
-    private void recordingStart() {
-        File dir = new File(Environment.getExternalStorageDirectory() + "/CallSopRecordings/");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        try {
-            long time = System.currentTimeMillis();
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM-dd-yyyy-HH:mm:ss");
-            Date resultdate = new Date(time);
-            filename = savedNumber + "-" + sdf.format(resultdate);
-            audio = new File(dir, filename + ".mp3");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        r = new MediaRecorder();
-        r.setAudioSource(MediaRecorder.AudioSource.MIC);
-        r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        r.setAudioChannels(1);
-        r.setAudioSamplingRate(44100);
-        r.setAudioEncodingBitRate(192000);
-        r.setOutputFile(audio.getAbsolutePath());
-        try {
-            r.prepare();
-            r.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void recordingStop() {
-        r.stop();
-        r.release();
-        addRecordingToMediaLibrary();
-        r=null;
-    }
-
-    private void addRecordingToMediaLibrary() {
-        ContentValues values = new ContentValues(4);
-        long current = System.currentTimeMillis();
-        values.put(MediaStore.Audio.Media.TITLE, "audio" + audio.getName());
-        values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
-        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
-        values.put(MediaStore.Audio.Media.DATA, audio.getAbsolutePath());
-
-        //creating content resolver and storing it in the external content uri
-        ContentResolver contentResolver = c.getContentResolver();
-        Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        newUri = contentResolver.insert(base, values);
-
-        //sending broadcast message to scan the media file so that it can be available
-        c.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
-//        Toast.makeText(c, "Added File " + newUri, Toast.LENGTH_LONG).show();
-    }
 
 }

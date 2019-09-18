@@ -14,12 +14,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codrox.messagetemplate.Constants;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.R;
 
 import java.text.SimpleDateFormat;

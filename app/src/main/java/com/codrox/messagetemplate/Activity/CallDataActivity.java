@@ -14,9 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.codrox.messagetemplate.Adapter.Call_List_Adapter;
-import com.codrox.messagetemplate.DataBase;
+import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.Modals.Modal_Call;
 import com.codrox.messagetemplate.R;
 
@@ -52,6 +53,24 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
         lv.setItemAnimator(new DefaultItemAnimator());
 
         db = new DataBase(this);
+
+        try
+        {
+            new fetchCall().execute();
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(this, "Please Open App Again", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(pd.isShowing())
+        {
+            pd.dismiss();
+        }
     }
 
     @Override
@@ -141,6 +160,7 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
                             }
                         }
                         while (d.moveToNext());
+                        d.close();
                     }
 
                     Modal_Call m = new Modal_Call(ID, NUMBER, DATE, name);
@@ -189,9 +209,4 @@ public class CallDataActivity extends AppCompatActivity implements Call_List_Ada
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        new fetchCall().execute();
-    }
 }
