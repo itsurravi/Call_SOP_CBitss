@@ -130,7 +130,7 @@ public class AlertActivity extends AppCompatActivity {
         }
         catch(Exception e)
         {
-
+            Log.d("ErrorLogs", String.valueOf(e));
         }
         getDateAndDeleteRecord();
     }
@@ -156,6 +156,7 @@ public class AlertActivity extends AppCompatActivity {
         {
             pd.dismiss();
         }
+        finish();
     }
 
     private class DataInfo extends AsyncTask<Void, Void, File> {
