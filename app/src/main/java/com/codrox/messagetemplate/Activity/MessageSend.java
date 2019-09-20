@@ -95,7 +95,9 @@ public class MessageSend extends AppCompatActivity {
                         case Constants.Text:
                             //send textMessage
 
-                            sendMessage(number, msg);
+                            //sendMessage(number, msg);
+
+                            Toast.makeText(MessageSend.this, number+"\n"+msg, Toast.LENGTH_SHORT).show();
 
                             db.updateCallText(id, n, msg, Constants.Status_Sent);
 

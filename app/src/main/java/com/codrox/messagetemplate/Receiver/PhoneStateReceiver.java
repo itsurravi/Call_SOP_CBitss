@@ -66,12 +66,11 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 //Transition of ringing->offhook are pickups of incoming calls.  Nothing done on them
                 if(lastState != TelephonyManager.CALL_STATE_RINGING){
                     isIncoming = false;
-                    savedNumber=number;
                 }
                 else {
                     picked=true;
                 }
-
+                savedNumber=number;
                 String n[] = number.split("\\s+");
                 StringBuilder ab = new StringBuilder();
                 for(String in : n)
