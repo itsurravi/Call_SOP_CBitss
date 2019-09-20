@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.codrox.messagetemplate.Constants;
 import com.codrox.messagetemplate.DB.DataBase;
 import com.codrox.messagetemplate.FileHandle;
+import com.codrox.messagetemplate.HomeWatcher;
 import com.codrox.messagetemplate.Modals.FileInfo;
 import com.codrox.messagetemplate.Prefrence;
 import com.codrox.messagetemplate.R;
@@ -75,6 +76,8 @@ public class AlertActivity extends AppCompatActivity {
         db = new DataBase(this);
 
         tv.setText(num);
+
+        homeWatcher();
 
         sp = new Prefrence(this);
 
@@ -135,6 +138,21 @@ public class AlertActivity extends AppCompatActivity {
         getDateAndDeleteRecord();
     }
 
+    private void homeWatcher() {
+        final HomeWatcher mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                finish();
+                mHomeWatcher.stopWatch();
+            }
+            @Override
+            public void onHomeLongPressed() {
+            }
+        });
+        mHomeWatcher.startWatch();
+    }
+
     private void getDateAndDeleteRecord() {
         Calendar calendar = Calendar.getInstance();
         int date = calendar.get(Calendar.DAY_OF_MONTH);
@@ -156,7 +174,6 @@ public class AlertActivity extends AppCompatActivity {
         {
             pd.dismiss();
         }
-        finish();
     }
 
     private class DataInfo extends AsyncTask<Void, Void, File> {
