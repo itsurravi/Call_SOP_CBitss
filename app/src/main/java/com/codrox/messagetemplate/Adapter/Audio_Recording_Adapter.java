@@ -29,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recording_Adapter.MyHolder> {
 
-    Context c;
-    List<Modal_Audio_Recording> recordings;
+    private Context c;
+    private List<Modal_Audio_Recording> recordings;
 
-    onItemClick click;
+    private onItemClick click;
 
     public Audio_Recording_Adapter(Context c, List<Modal_Audio_Recording> recordings) {
         this.c = c;
@@ -43,8 +43,7 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
     @Override
     public MyHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(c).inflate(R.layout.audio_list_adapter, viewGroup, false);
-        MyHolder h = new MyHolder(v);
-        return h;
+        return new MyHolder(v);
     }
 
     @Override
