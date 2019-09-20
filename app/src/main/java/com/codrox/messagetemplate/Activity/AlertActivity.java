@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codrox.messagetemplate.Constants;
 import com.codrox.messagetemplate.DB.DataBase;
@@ -143,6 +144,7 @@ public class AlertActivity extends AppCompatActivity {
         mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
             @Override
             public void onHomePressed() {
+                Toast.makeText(AlertActivity.this, "Home Pressed", Toast.LENGTH_SHORT).show();
                 finish();
                 mHomeWatcher.stopWatch();
             }
@@ -174,6 +176,13 @@ public class AlertActivity extends AppCompatActivity {
         {
             pd.dismiss();
         }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
     }
 
     private class DataInfo extends AsyncTask<Void, Void, File> {
