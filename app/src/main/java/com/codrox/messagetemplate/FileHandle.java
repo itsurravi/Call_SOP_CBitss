@@ -168,7 +168,11 @@ public class FileHandle {
             }
         });
 
+        if(files.size()>0)
         return files.get(0);
+
+        else
+            return null;
     }
 
     /*
