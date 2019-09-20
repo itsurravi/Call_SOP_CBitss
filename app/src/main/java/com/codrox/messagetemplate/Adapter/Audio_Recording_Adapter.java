@@ -74,15 +74,22 @@ public class Audio_Recording_Adapter extends RecyclerView.Adapter<Audio_Recordin
 
     private String getAudioDuration(String filePath)
     {
-        Uri uri = Uri.parse(filePath);
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(c,uri);
-        String durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        try
+        {
+            Uri uri = Uri.parse(filePath);
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(c,uri);
+            String durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
-        return String.format("%d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr)),
-                TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(durationStr)) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr))));
+            return String.format("%d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr)),
+                    TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(durationStr)) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(durationStr))));
+        }
+        catch (Exception e)
+        {
+            return "0:00";
+        }
     }
 
     class MyHolder extends RecyclerView.ViewHolder {

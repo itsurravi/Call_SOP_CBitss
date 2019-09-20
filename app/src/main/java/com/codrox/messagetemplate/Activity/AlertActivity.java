@@ -156,6 +156,7 @@ public class AlertActivity extends AppCompatActivity {
         {
             pd.dismiss();
         }
+        finish();
     }
 
     private class DataInfo extends AsyncTask<Void, Void, File> {
@@ -212,6 +213,7 @@ public class AlertActivity extends AppCompatActivity {
                     FileHandle fd = new FileHandle(AlertActivity.this);
                     File file = fd.getFiles(new File(sp.getAudioPath()));
                     try {
+                        if(file!=null)
                         copyDataBase(file);
                     } catch (IOException e) {
                         e.printStackTrace();
