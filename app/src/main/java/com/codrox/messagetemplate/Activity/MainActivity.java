@@ -55,18 +55,16 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class MainActivity extends AppCompatActivity {
 
     DataBase db;
-    Button b1, b2;
     String UPLOAD_URL = "http://fossfoundation.com/SOP/newone.php";
     String UPLOAD_URLR = "http://fossfoundation.com/SOP/remark.php";
     String UPLOAD_URLT = "http://fossfoundation.com/SOP/tag.php";
-
-    public final int PERMISSION_CODE = 12345;
 
     Prefrence sp;
     List<Modal_Call> call;
     List<Remarks> remarks;
     List<Tags> tags;
-
+    Button b1, b2;
+    public final int PERMISSION_CODE = 12345;
 
 
     @Override
@@ -209,8 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.sync)
-        {
+        if (item.getItemId() == R.id.sync) {
 //            getData();
             ComponentName componentName = new ComponentName(this, FileUploadingService.class);
 
@@ -220,35 +217,30 @@ public class MainActivity extends AppCompatActivity {
 
                 List<JobInfo> l = scheduler.getAllPendingJobs();
 
-                if (l.size() <= 0) {
-
-                    JobInfo info = new JobInfo.Builder(122, componentName)
-                            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                            .setPersisted(true)
-                            .setMinimumLatency(7000)
-                            .build();
-
-                    int result = scheduler.schedule(info);
-
-                    if (result == JobScheduler.RESULT_SUCCESS) {
-                        Log.d("JOBSCHEDULE", "Job Scheduled");
-                    } else {
-                        Log.d("JOBSCHEDULE", "Job Scheduling Failed");
-                    }
+                if (l.size() > 0) {
+                    scheduler.cancelAll();
                 }
 
-            }
-            catch(Exception e)
-            {
+                JobInfo info = new JobInfo.Builder(122, componentName)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setPersisted(true)
+                        .setMinimumLatency(7000)
+                        .build();
 
+                int result = scheduler.schedule(info);
+
+                if (result == JobScheduler.RESULT_SUCCESS) {
+                    Log.d("JOBSCHEDULE", "Job Scheduled");
+                } else {
+                    Log.d("JOBSCHEDULE", "Job Scheduling Failed");
+                }
+
+            } catch (Exception e) {
+                Log.d("JobError", e.toString());
             }
-        }
-        else if(item.getItemId() == R.id.path)
-        {
+        } else if (item.getItemId() == R.id.path) {
             choosePath();
-        }
-        else if(item.getItemId()==R.id.deleteRecord)
-        {
+        } else if (item.getItemId() == R.id.deleteRecord) {
 
             Toast.makeText(this, "Deletion of Old Record started", Toast.LENGTH_SHORT).show();
 
@@ -273,8 +265,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 9999) {
             if (resultCode == RESULT_OK) {
-                try
-                {
+                try {
                     Log.i("Test", "Result URI " + data.getData());
                     Uri uri = data.getData();
                     Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri,
@@ -282,9 +273,7 @@ public class MainActivity extends AppCompatActivity {
                     String path = FileHandle.getPath(this, docUri);
                     sp.setAudioPath(path);
                     Log.d("Test", path);
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Toast.makeText(this, "Path is Not Valid", Toast.LENGTH_SHORT).show();
                 }
             } else {

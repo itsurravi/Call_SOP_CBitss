@@ -110,7 +110,6 @@ public class FileUploadingService extends JobService {
                 while (c.moveToNext());
             }
 
-
             Cursor ct = db.getUnsyncedTags();
             tags.clear();
             if (ct != null && ct.getCount() > 0) {
@@ -128,7 +127,6 @@ public class FileUploadingService extends JobService {
 
                 while (ct.moveToNext());
             }
-
 
         } catch (Exception e) {
 

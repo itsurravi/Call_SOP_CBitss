@@ -114,26 +114,24 @@ public class AlertActivity extends AppCompatActivity {
 
             List<JobInfo> l = scheduler.getAllPendingJobs();
 
-            if (l.size() <= 0) {
+            if (l.size() > 0) {
+                scheduler.cancelAll();
+            }
+            JobInfo info = new JobInfo.Builder(121, componentName)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .setPersisted(true)
+                    .setMinimumLatency(7000)
+                    .build();
 
-                JobInfo info = new JobInfo.Builder(121, componentName)
-                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                        .setPersisted(true)
-                        .setMinimumLatency(7000)
-                        .build();
+            int result = scheduler.schedule(info);
 
-                int result = scheduler.schedule(info);
-
-                if (result == JobScheduler.RESULT_SUCCESS) {
-                    Log.d("JOBSCHEDULE", "Job Scheduled");
-                } else {
-                    Log.d("JOBSCHEDULE", "Job Scheduling Failed");
-                }
+            if (result == JobScheduler.RESULT_SUCCESS) {
+                Log.d("JOBSCHEDULE", "Job Scheduled");
+            } else {
+                Log.d("JOBSCHEDULE", "Job Scheduling Failed");
             }
 
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             Log.d("ErrorLogs", String.valueOf(e));
         }
         getDateAndDeleteRecord();
@@ -148,6 +146,7 @@ public class AlertActivity extends AppCompatActivity {
                 finish();
                 mHomeWatcher.stopWatch();
             }
+
             @Override
             public void onHomeLongPressed() {
             }
@@ -158,8 +157,7 @@ public class AlertActivity extends AppCompatActivity {
     private void getDateAndDeleteRecord() {
         Calendar calendar = Calendar.getInstance();
         int date = calendar.get(Calendar.DAY_OF_MONTH);
-        if(date==1)
-        {
+        if (date == 1) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -172,8 +170,7 @@ public class AlertActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(pd.isShowing())
-        {
+        if (pd.isShowing()) {
             pd.dismiss();
         }
     }
@@ -227,20 +224,16 @@ public class AlertActivity extends AppCompatActivity {
                     break;
             }*/
 
-            if(dircode==CallLog.Calls.MISSED_TYPE)
-            {
+            if (dircode == CallLog.Calls.MISSED_TYPE) {
                 return null;
-            }
-            else
-            {
-                if(Integer.parseInt(callDuration)>0)
-                {
+            } else {
+                if (Integer.parseInt(callDuration) > 0) {
 
                     FileHandle fd = new FileHandle(AlertActivity.this);
                     File file = fd.getFiles(new File(sp.getAudioPath()));
                     try {
-                        if(file!=null)
-                        copyDataBase(file);
+                        if (file != null)
+                            copyDataBase(file);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -255,8 +248,7 @@ public class AlertActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(File file) {
             super.onPostExecute(file);
-            if(file!=null)
-            {
+            if (file != null) {
                 Log.d("FileCopy", "Done");
             }
             pd.dismiss();
