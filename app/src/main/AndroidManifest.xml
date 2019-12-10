@@ -58,7 +58,8 @@
         <activity
             android:name=".Activity.AlertActivity"
             android:excludeFromRecents="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:launchMode="singleInstance" />
         <activity
             android:name=".Activity.AddTemplateActivity"
             android:screenOrientation="portrait" />

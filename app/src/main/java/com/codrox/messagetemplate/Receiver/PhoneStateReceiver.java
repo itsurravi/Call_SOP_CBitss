@@ -30,23 +30,30 @@ public class PhoneStateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         this.c = context;
         db = new DataBase(context);
-        if (intent.getAction().equals("android.intent.action.NEW_OUTGOING_CALL")) {
-            savedNumber = intent.getExtras().getString("android.intent.extra.PHONE_NUMBER");
+        try
+        {
+            if (intent.getAction().equals("android.intent.action.NEW_OUTGOING_CALL")) {
+                savedNumber = intent.getExtras().getString("android.intent.extra.PHONE_NUMBER");
+            }
+            else{
+                String stateStr = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
+                String number = intent.getExtras().getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                int state = 0;
+                if(stateStr.equals(TelephonyManager.EXTRA_STATE_IDLE)){
+                    state = TelephonyManager.CALL_STATE_IDLE;
+                }
+                else if(stateStr.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)){
+                    state = TelephonyManager.CALL_STATE_OFFHOOK;
+                }
+                else if(stateStr.equals(TelephonyManager.EXTRA_STATE_RINGING)){
+                    state = TelephonyManager.CALL_STATE_RINGING;
+                }
+                onCallStateChanged(context, state, number);
+            }
         }
-        else{
-            String stateStr = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
-            String number = intent.getExtras().getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-            int state = 0;
-            if(stateStr.equals(TelephonyManager.EXTRA_STATE_IDLE)){
-                state = TelephonyManager.CALL_STATE_IDLE;
-            }
-            else if(stateStr.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)){
-                state = TelephonyManager.CALL_STATE_OFFHOOK;
-            }
-            else if(stateStr.equals(TelephonyManager.EXTRA_STATE_RINGING)){
-                state = TelephonyManager.CALL_STATE_RINGING;
-            }
-            onCallStateChanged(context, state, number);
+        catch (Exception e)
+        {
+
         }
     }
 
@@ -83,7 +90,6 @@ public class PhoneStateReceiver extends BroadcastReceiver {
 //                recordingStart();
 
                 db.insertCall(number,"","", String.valueOf(System.currentTimeMillis()), Constants.Status_Pending,"", "",Constants.offline);
-
                 Log.d("Data_offhook", number);
                 break;
             case TelephonyManager.CALL_STATE_IDLE:
@@ -93,6 +99,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 //Went to idle-  this is the end of a call.  What type depends on previous state(s)
                 if(lastState == TelephonyManager.CALL_STATE_OFFHOOK && picked){
 //                    Toast.makeText(context, "Incoming Call Ended...", Toast.LENGTH_SHORT).show();
+                    Log.d("Data_idle", "call1");
                     Intent intent = new Intent(context, AlertActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constants.Number, savedNumber);
@@ -101,6 +108,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 }
                 else if(!isIncoming){
 //                    Toast.makeText(context, "Outgoing    Call Ended...", Toast.LENGTH_SHORT).show();
+                    Log.d("Data_idle", "call2");
                     Intent intent = new Intent(context,AlertActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constants.Number, savedNumber);
